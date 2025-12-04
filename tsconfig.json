@@ -5,6 +5,9 @@
   "references": [
     {
       "path": "./apps/form-builder"
+    },
+    {
+      "path": "./shared"
     }
   ]
 }
