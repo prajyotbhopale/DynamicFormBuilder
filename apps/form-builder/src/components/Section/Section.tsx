@@ -17,16 +17,22 @@ export const SectionComponent = ({ section }: SectionProps) => {
 
   const isCreate = metadata.viewType === 'CREATE';
 
-  // Update section label
-  const updateLabel = (label: string) => {
-    const updatedSections = metadata.sections.map((sec) =>
-      sec.id === section.id ? { ...sec, label } : sec
-    );
+  // ⭐ Update section label
+ const updateLabel = (label: string) => {
+  const updatedSections = metadata.sections.map((sec) =>
+    sec.id === section.id ? { ...sec, label } : sec
+  );
 
-    setMetadata({ ...metadata, sections: updatedSections });
-  };
+  setMetadata({ ...metadata, sections: updatedSections });
 
-  // Hide "New Section" in non-create modes
+  // ⭐ Clear Zod validation error when label is corrected
+  if (ctx.setBuilderError) {
+    ctx.setBuilderError(null);
+  }
+};
+
+
+  // ⭐ Clean logic: hide "New Section" only in preview/view/edit
   const visibleLabel =
     !isCreate && section.label === 'New Section' ? '' : section.label;
 
@@ -34,14 +40,20 @@ export const SectionComponent = ({ section }: SectionProps) => {
     <div className="border rounded p-4 mb-4 bg-white shadow-sm">
       {/* ---------- SECTION HEADER ---------- */}
       <div className="flex items-center justify-between mb-3">
+        
         {/* Editable Label ONLY in CREATE mode */}
-        {isCreate && (
+        {isCreate ? (
           <input
             type="text"
             value={section.label}
             onChange={(e) => updateLabel(e.target.value)}
             className="text-lg font-semibold border-b px-2 py-1 w-1/2"
           />
+        ) : (
+          // ⭐ Show the label in VIEW/EDIT mode
+          <h2 className="text-xl font-semibold text-gray-800">
+            {visibleLabel}
+          </h2>
         )}
 
         <div className="flex items-center gap-2">

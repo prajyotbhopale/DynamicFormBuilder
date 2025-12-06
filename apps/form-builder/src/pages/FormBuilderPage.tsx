@@ -1,4 +1,5 @@
 import { useContext, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { FormBuilderContext } from '../context/FormBuilderContext';
 import { SectionComponent } from '../components/Section/Section';
 import { PreviewForm } from '../components/Preview/PreviewForm';
@@ -11,14 +12,22 @@ export const FormBuilderPage = ({ showPreview }: Props) => {
 
   const { metadata, addSection, setMetadata } = ctx;
 
+  // ⭐ Detect current URL to avoid duplicate UI
+  const location = useLocation();
+  const isPreviewRoute =
+    location.pathname === "/preview" ||
+    location.pathname === "/view" ||
+    location.pathname === "/edit";
+
+  // ⭐ If on a preview-related route, return nothing
+  if (isPreviewRoute) return null;
+
   // ⭐ Local state for editable title
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
-  const handleTitleBlur = () => {
-    setIsEditingTitle(false);
-  };
+  const handleTitleBlur = () => setIsEditingTitle(false);
 
-  // Convert CREATE/VIEW/EDIT to lower-case mode
+  // ⭐ Convert viewType to lower-case preview mode
   const previewMode =
     metadata.viewType === 'CREATE'
       ? 'create'
@@ -26,7 +35,7 @@ export const FormBuilderPage = ({ showPreview }: Props) => {
       ? 'view'
       : 'edit';
 
-  // ⭐ If Preview button is ON → always show the form preview
+  // ⭐ If Preview button is ON → show preview form
   if (showPreview) {
     return (
       <div className="p-6">
@@ -35,9 +44,18 @@ export const FormBuilderPage = ({ showPreview }: Props) => {
     );
   }
 
-  // ⭐ If not previewing → show builder or preview outputs
+  // ⭐ Otherwise show the form builder UI
   return (
     <div className="p-6">
+          {/* 🔥 Builder Validation Error Message */}
+    {ctx.builderError && (
+      <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 mb-4 rounded">
+        {ctx.builderError}
+      </div>
+    )}
+
+
+      {/* CREATE Mode → Builder */}
       {metadata.viewType === 'CREATE' && (
         <>
           {/* Editable Title */}
@@ -49,8 +67,6 @@ export const FormBuilderPage = ({ showPreview }: Props) => {
                 className="border-none outline-none px-2 py-1 rounded text-2xl font-bold"
                 style={{
                   width: `${Math.max(metadata.title.length * 14, 200)}px`,
-                  border: 'none',
-                  outline: 'none',
                 }}
                 value={metadata.title}
                 onChange={(e) =>
@@ -86,7 +102,10 @@ export const FormBuilderPage = ({ showPreview }: Props) => {
         </>
       )}
 
+      {/* VIEW Mode */}
       {metadata.viewType === 'VIEW' && <PreviewForm mode="view" />}
+
+      {/* EDIT Mode */}
       {metadata.viewType === 'EDIT' && <PreviewForm mode="edit" />}
     </div>
   );

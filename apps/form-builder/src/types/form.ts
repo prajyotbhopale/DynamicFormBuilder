@@ -38,6 +38,7 @@ export interface Section {
 }
 
 export interface FormMetadata {
+   id?: string;  
   title: string;
   viewType: ViewType;
   sections: Section[];

@@ -2,10 +2,14 @@ declare global {
   function alert(message?: any): void;
 }
 
-import { useContext } from "react";
+// import React, { useEffect } from "react";
+
+import { useZodSchema } from "../../hooks/useZodSchema";
+
+import { useContext, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom"; // ⭐ ADD THIS
+import { useNavigate } from "react-router-dom";
 
 import { FormBuilderContext } from "../../context/FormBuilderContext";
 
@@ -16,7 +20,6 @@ import { TextareaField } from "../FieldTypes/TextareaField";
 import { CheckboxField } from "../FieldTypes/CheckboxField";
 import { SelectField } from "../FieldTypes/SelectField";
 
-import { generateZodSchemaForForm } from "../../utils/generateZodSchemaForForm";
 import { getExactWidth } from "../../utils/getExactWidth";
 
 type PreviewFormProps = {
@@ -25,50 +28,67 @@ type PreviewFormProps = {
 
 export const PreviewForm = ({ mode }: PreviewFormProps) => {
   const ctx = useContext(FormBuilderContext);
-  const navigate = useNavigate(); // ⭐ ADD THIS
+  const navigate = useNavigate();
   if (!ctx) return null;
 
   const { metadata, submittedData, setSubmittedData, setMetadata } = ctx;
 
-  // Generate validation schema dynamically
-  const formSchema = generateZodSchemaForForm(metadata);
+  // ⭐ Use memoized schema hook
+  const formSchema = useZodSchema(metadata);
+
+  
+
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset, 
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues:
       mode === "edit" || mode === "view" ? submittedData || {} : {},
+
+
   });
 
+  useEffect(() => {
+  if (mode === "edit" || mode === "view") {
+    if (submittedData) {
+      reset(submittedData);   // ⭐ reload values after refresh
+    }
+  }
+}, [submittedData]);
+
+
   // ⭐ Final clean onSubmit function
- const onSubmit = (data: any) => {
-  setSubmittedData(data);
+  const onSubmit = (data: any) => {
+    setSubmittedData(data);
 
-  // ⭐ Save filled response
-  const allResponses = JSON.parse(localStorage.getItem("savedFilledForms") || "[]");
+    // ⭐ Save filled response
+    const allResponses = JSON.parse(
+      localStorage.getItem("savedFilledForms") || "[]"
+    );
 
-  const newResponse = {
-    id: crypto.randomUUID(),
-    title: metadata.title || "Untitled Form",
-    values: data,
-    submittedAt: new Date().toISOString(),
-  };
+    const newResponse = {
+      id: crypto.randomUUID(),
+      title: metadata.title || "Untitled Form",
+      values: data,
+      submittedAt: new Date().toISOString(),
+    };
 
-  allResponses.push(newResponse);
-  localStorage.setItem("savedFilledForms", JSON.stringify(allResponses));
+    allResponses.push(newResponse);
+    localStorage.setItem("savedFilledForms", JSON.stringify(allResponses));
 
-  alert("Form submitted successfully!");
+    alert("Form submitted successfully!");
 
-  setMetadata((prev) => ({
-    ...prev,
-    viewType: "VIEW",
-  }));
+    // ⭐ Switch to VIEW mode
+    setMetadata((prev) => ({
+      ...prev,
+      viewType: "VIEW",
+    }));
 
-
-    // ⭐ CRITICAL: go to /view so mode === "view"
+    // ⭐ Navigate to view page
     navigate("/view");
   };
 
@@ -79,8 +99,10 @@ export const PreviewForm = ({ mode }: PreviewFormProps) => {
       field,
       register,
       error: errors[field.id],
-      disabled, // ⭐ this is true only in view mode
+      disabled,
     };
+    console.log("submittedData in PreviewForm:", submittedData);
+
 
     switch (field.type) {
       case "text":
@@ -113,33 +135,32 @@ export const PreviewForm = ({ mode }: PreviewFormProps) => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Loop through all sections */}
-      {metadata.sections.map((section) => (
-  <div
-    key={section.id}
-    className="p-5 mb-6 border-2 border-gray-200 rounded-lg shadow-sm bg-gray-50"
-  >
-    {/* ⭐ Section Label inside Preview */}
-    <h2 className="text-xl font-semibold mb-4 text-gray-800">
-      {section.label}
-    </h2>
-
-    {/* Rows */}
-    {section.rows.map((row) => (
-      <div key={row.id} className="flex flex-wrap mb-4 -mx-2">
-        {row.fields.map((field) => (
+        {metadata.sections.map((section) => (
           <div
-            key={field.id}
-            style={{ width: getExactWidth(field.size) }}
-            className="px-2"
+            key={section.id}
+            className="p-5 mb-6 border-2 border-gray-200 rounded-lg shadow-sm bg-gray-50"
           >
-            {renderField(field)}
+            {/* ⭐ Section Label inside Preview */}
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              {section.label}
+            </h2>
+
+            {/* Rows */}
+            {section.rows.map((row) => (
+              <div key={row.id} className="flex flex-wrap mb-4 -mx-2">
+                {row.fields.map((field) => (
+                  <div
+                    key={field.id}
+                    style={{ width: getExactWidth(field.size) }}
+                    className="px-2"
+                  >
+                    {renderField(field)}
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         ))}
-      </div>
-    ))}
-  </div>
-))}
-
 
         {mode !== "view" && (
           <button

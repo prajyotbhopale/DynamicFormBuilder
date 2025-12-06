@@ -15,21 +15,6 @@ export const RowComponent = ({ row, sectionId }: RowProps) => {
 
   const { addField, deleteRow, metadata } = ctx;
 
-  // ⭐ EXACT widths for builder mode
-  // const getExactWidth = (size: string) => {
-  //   switch (size) {
-  //     case "SMALL":
-  //       return "33%";
-  //     case "MEDIUM":
-  //       return "50%";
-  //     case "LARGE":
-  //       return "66%";
-  //     case "XL":
-  //       return "100%";
-  //     default:
-  //       return "33%";
-  //   }
-  // };
 
   const isCreate = metadata.viewType === "CREATE";
 

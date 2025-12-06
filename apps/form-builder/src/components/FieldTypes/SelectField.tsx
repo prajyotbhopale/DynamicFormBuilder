@@ -1,16 +1,17 @@
-import { useContext } from "react";
-import { FormBuilderContext } from "../../context/FormBuilderContext";
+
 
 export const SelectField = ({ field, register, error, disabled }: any) => {
-  const context = useContext(FormBuilderContext);
-  const isView = disabled ?? context?.metadata.viewType === "VIEW";
+ 
+ 
+  const isView = Boolean(disabled);
 
   return (
     <div>
       <label className="block mb-1 font-medium">{field.label}</label>
       <select
         {...register(field.id)}
-        disabled={isView}
+       disabled={isView}
+        readOnly={isView}
         className={`border px-2 py-1 rounded w-full ${
           error ? "border-red-500" : ""
         }`}

@@ -10,11 +10,16 @@ export type FormBuilderContextType = {
 
   addSection: () => void;
   deleteSection: (sectionId: string) => void;
+
   addRow: (sectionId: string) => void;
   deleteRow: (sectionId: string, rowId: string) => void;
 
   addField: (sectionId: string, rowId: string) => void;
   deleteField: (sectionId: string, rowId: string, fieldId: string) => void;
+
+  // ⭐ New validation error system
+  builderError: string | null;
+  setBuilderError: (msg: string | null) => void;
 };
 
 export const FormBuilderContext =

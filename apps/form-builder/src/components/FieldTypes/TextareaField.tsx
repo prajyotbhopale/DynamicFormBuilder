@@ -1,9 +1,10 @@
-import { useContext } from "react";
-import { FormBuilderContext } from "../../context/FormBuilderContext";
+
 
 export const TextareaField = ({ field, register, error, disabled }: any) => {
-  const context = useContext(FormBuilderContext);
-  const isView = disabled ?? context?.metadata.viewType === "VIEW";
+  
+
+   const isView = Boolean(disabled);
+
 
   return (
     <div>
@@ -11,6 +12,7 @@ export const TextareaField = ({ field, register, error, disabled }: any) => {
       <textarea
         {...register(field.id)}
         disabled={isView}
+        readOnly={isView}
         className={`border px-2 py-1 rounded w-full h-20 ${
           error ? "border-red-500" : ""
         }`}

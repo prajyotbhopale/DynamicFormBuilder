@@ -1,9 +1,9 @@
-import { useContext } from "react";
-import { FormBuilderContext } from "../../context/FormBuilderContext";
+
 
 export const NumberField = ({ field, register, error, disabled }: any) => {
-  const context = useContext(FormBuilderContext);
-  const isView = disabled ?? context?.metadata.viewType === "VIEW";
+  
+  
+  const isView = Boolean(disabled);
 
   return (
     <div>
@@ -12,6 +12,7 @@ export const NumberField = ({ field, register, error, disabled }: any) => {
         type="number"
         {...register(field.id)}
         disabled={isView}
+        readOnly={isView}
         className={`border px-2 py-1 rounded w-full ${
           error ? "border-red-500" : ""
         }`}

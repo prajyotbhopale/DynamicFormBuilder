@@ -1,61 +1,91 @@
-import { useEffect, useState, useContext } from "react";
+// SavedFormsPage.tsx
+
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FormBuilderContext } from "../context/FormBuilderContext";
 
+type SavedForm = {
+  id: string;
+  title: string;
+  metadata: any;
+  submittedData: any | null;
+  createdAt: string;
+};
+
 export const SavedFormsPage = () => {
-  const [savedForms, setSavedForms] = useState<any[]>([]);
-  const navigate = useNavigate();
+  const [forms, setForms] = useState<SavedForm[]>([]);
   const ctx = useContext(FormBuilderContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const forms = JSON.parse(localStorage.getItem("savedForms") || "[]");
-    setSavedForms(forms);
+    const raw = localStorage.getItem("savedForms");
+    if (!raw) return;
+    try {
+      setForms(JSON.parse(raw));
+    } catch {
+      setForms([]);
+    }
   }, []);
 
-  const openForm = (form: any) => {
-    ctx?.setMetadata(form.metadata);
-    navigate("/");
-  };
+  if (!ctx) return null;
 
-  // ⭐ DELETE FORM
+  const { setMetadata, setSubmittedData } = ctx;
+
+ const openForm = (form: SavedForm) => {
+
+    
+  // Load saved metadata but always open in VIEW mode
+ setMetadata({
+  ...form.metadata,
+  id: form.id,          // ⭐ store saved form ID inside metadata
+  viewType: "VIEW",
+  
+});
+
+
+
+  setSubmittedData(form.submittedData || null);   // ⭐ LOAD SAVED VALUES HERE
+console.log("FORM.SUBMITTEDDATA LOADED:", form.submittedData);
+
+localStorage.setItem("currentFormId", form.id);
+  // Go to VIEW page
+  navigate("/view");
+};
+
   const deleteForm = (id: string) => {
-    const updated = savedForms.filter((form) => form.id !== id);
-
-    setSavedForms(updated);
+    const updated = forms.filter(f => f.id !== id);
+    setForms(updated);
     localStorage.setItem("savedForms", JSON.stringify(updated));
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Saved Forms</h1>
+      <h2 className="text-xl font-bold mb-4">Saved Forms</h2>
 
-      {savedForms.length === 0 && (
-        <p className="text-gray-600">No saved forms found.</p>
-      )}
+      {forms.length === 0 && <p>No saved forms yet.</p>}
 
-      <div className="space-y-4">
-        {savedForms.map((form) => (
+      <div className="space-y-3">
+        {forms.map((form) => (
           <div
             key={form.id}
-            className="p-4 bg-white border rounded shadow flex justify-between items-center"
+            className="flex items-center justify-between border rounded px-4 py-2"
           >
             <div>
-              <h2 className="text-xl font-semibold">{form.title}</h2>
-              <p className="text-sm text-gray-500">
-                Saved on {new Date(form.createdAt).toLocaleString()}
-              </p>
+              <div className="font-semibold">{form.title}</div>
+              <div className="text-xs text-gray-500">
+                Saved at: {new Date(form.createdAt).toLocaleString()}
+              </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                onClick={() => openForm(form)}
+                className="px-3 py-1 rounded bg-blue-600 text-white text-sm"
+                onClick={() => openForm(form)}   // ⭐ EDIT preview
               >
                 Open
               </button>
-
               <button
-                className="px-4 py-2 bg-red-600 text-white rounded"
+                className="px-3 py-1 rounded bg-red-500 text-white text-sm"
                 onClick={() => deleteForm(form.id)}
               >
                 Delete

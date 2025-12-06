@@ -4,7 +4,8 @@
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
     "jsx": "react-jsx",
-    "lib": ["dom"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",

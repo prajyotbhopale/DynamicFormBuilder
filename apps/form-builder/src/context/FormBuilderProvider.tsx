@@ -1,6 +1,6 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect, useRef } from 'react';
 import { FormBuilderContext } from './FormBuilderContext';
-import { FormMetadata, Section, Row, Field } from '../types/form';
+import { FormMetadata, Section } from '../types/form';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialMetadata: FormMetadata = {
@@ -11,9 +11,37 @@ const initialMetadata: FormMetadata = {
 
 export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
   const [metadata, setMetadata] = useState<FormMetadata>(initialMetadata);
-
-  // ⭐ FIX — this MUST be inside the provider
   const [submittedData, setSubmittedData] = useState<any>(null);
+  const [builderError, setBuilderError] = useState<string | null>(null);
+
+
+  const firstLoadRef = useRef(true);
+
+  // ⭐ 1. AUTO-LOAD FIRST (on initial page load)
+ useEffect(() => {
+  const forms = JSON.parse(localStorage.getItem("savedForms") || "[]");
+  const id = localStorage.getItem("currentFormId");
+
+  if (id) {
+    const existing = forms.find((f: any) => f.id === id);
+    if (existing) {
+      setMetadata(existing.metadata);          // ⭐ restore layout
+      setSubmittedData(existing.submittedData || null);   // ⭐ restore values
+    }
+  }
+}, []);
+
+
+  // ⭐ 2. AUTO-SAVE AFTER LOAD FINISHES
+  useEffect(() => {
+    if (firstLoadRef.current) {
+      firstLoadRef.current = false;
+      return; // Do NOT auto-save on first render
+    }
+
+    // Save on every change AFTER load
+    localStorage.setItem("formBuilderMetadata", JSON.stringify(metadata));
+  }, [metadata]);
 
   // -----------------------------
   // Add a new section
@@ -26,68 +54,54 @@ export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
       rows: [],
     };
 
-    setMetadata((prev) => ({
+    setMetadata(prev => ({
       ...prev,
       sections: [...prev.sections, newSection],
     }));
   };
 
-  // -----------------------------
-  // Delete a section
-  // -----------------------------
+  // Delete Section
   const deleteSection = (sectionId: string) => {
-    setMetadata((prev) => ({
+    setMetadata(prev => ({
       ...prev,
-      sections: prev.sections.filter((sec) => sec.id !== sectionId),
+      sections: prev.sections.filter(sec => sec.id !== sectionId),
     }));
   };
 
-  // -----------------------------
-  // Add a row inside a section
-  // -----------------------------
+  // Add Row
   const addRow = (sectionId: string) => {
-    setMetadata((prev) => ({
+    setMetadata(prev => ({
       ...prev,
-      sections: prev.sections.map((section) =>
+      sections: prev.sections.map(section =>
         section.id !== sectionId
           ? section
-          : {
-              ...section,
-              rows: [...section.rows, { id: uuidv4(), fields: [] }],
-            }
+          : { ...section, rows: [...section.rows, { id: uuidv4(), fields: [] }] }
       ),
     }));
   };
 
-  // -----------------------------
-  // Delete a row
-  // -----------------------------
+  // Delete Row
   const deleteRow = (sectionId: string, rowId: string) => {
-    setMetadata((prev) => ({
+    setMetadata(prev => ({
       ...prev,
-      sections: prev.sections.map((section) =>
+      sections: prev.sections.map(section =>
         section.id !== sectionId
           ? section
-          : {
-              ...section,
-              rows: section.rows.filter((row) => row.id !== rowId),
-            }
+          : { ...section, rows: section.rows.filter(r => r.id !== rowId) }
       ),
     }));
   };
 
-  // -----------------------------
-  // Add a field inside a row
-  // -----------------------------
+  // Add Field
   const addField = (sectionId: string, rowId: string) => {
-    setMetadata((prev) => ({
+    setMetadata(prev => ({
       ...prev,
-      sections: prev.sections.map((section) =>
+      sections: prev.sections.map(section =>
         section.id !== sectionId
           ? section
           : {
               ...section,
-              rows: section.rows.map((row) =>
+              rows: section.rows.map(row =>
                 row.id !== rowId
                   ? row
                   : {
@@ -99,18 +113,13 @@ export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
                           label: 'New Field',
                           type: 'text',
                           size: 'SMALL',
-
-                          // ⭐ DEFAULT VALIDATION RULES
                           required: false,
                           minLength: undefined,
                           maxLength: undefined,
                           min: undefined,
                           max: undefined,
-
-                          // placeholder: '',
-                          options: [], // for select field (can change later)
-
-                          defaultValue: false, // for checkbox
+                          options: [],
+                          defaultValue: false, // checkbox
                         },
                       ],
                     }
@@ -120,26 +129,19 @@ export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
-  // -----------------------------
-  // Delete a field
-  // -----------------------------
+  // Delete Field
   const deleteField = (sectionId: string, rowId: string, fieldId: string) => {
-    setMetadata((prev) => ({
+    setMetadata(prev => ({
       ...prev,
-      sections: prev.sections.map((section) =>
+      sections: prev.sections.map(section =>
         section.id !== sectionId
           ? section
           : {
               ...section,
-              rows: section.rows.map((row) =>
+              rows: section.rows.map(row =>
                 row.id !== rowId
                   ? row
-                  : {
-                      ...row,
-                      fields: row.fields.filter(
-                        (field) => field.id !== fieldId
-                      ),
-                    }
+                  : { ...row, fields: row.fields.filter(f => f.id !== fieldId) }
               ),
             }
       ),
@@ -156,9 +158,11 @@ export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
         addSection,
         deleteSection,
         addRow,
+        deleteRow,
         addField,
         deleteField,
-        deleteRow,
+         builderError,
+    setBuilderError,
       }}
     >
       {children}
