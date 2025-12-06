@@ -80,7 +80,7 @@ export const PreviewForm = ({ mode }: PreviewFormProps) => {
     allResponses.push(newResponse);
     localStorage.setItem("savedFilledForms", JSON.stringify(allResponses));
 
-    alert("Form submitted successfully!");
+    alert("Form submitted successfully! Check Three dots");
 
     // ⭐ Switch to VIEW mode
     setMetadata((prev) => ({

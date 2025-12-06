@@ -91,7 +91,7 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
         };
 
         localStorage.setItem('savedForms', JSON.stringify(allForms));
-        alert('Form updated successfully!');
+        alert('Form updated successfully!Check three dots');
 
         setMetadata({
           title: '',
@@ -119,7 +119,7 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
 
     allForms.push(newForm);
     localStorage.setItem('savedForms', JSON.stringify(allForms));
-    alert('Form saved successfully!');
+    alert('Form saved successfully!Check Theree dots');
 
     setMetadata({
       title: '',

@@ -1,8 +1,8 @@
 // SavedFormsPage.tsx
 
-import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FormBuilderContext } from "../context/FormBuilderContext";
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FormBuilderContext } from '../context/FormBuilderContext';
 
 type SavedForm = {
   id: string;
@@ -18,7 +18,7 @@ export const SavedFormsPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const raw = localStorage.getItem("savedForms");
+    const raw = localStorage.getItem('savedForms');
     if (!raw) return;
     try {
       setForms(JSON.parse(raw));
@@ -31,31 +31,26 @@ export const SavedFormsPage = () => {
 
   const { setMetadata, setSubmittedData } = ctx;
 
- const openForm = (form: SavedForm) => {
+  const openForm = (form: SavedForm) => {
+    // Load saved metadata but always open in VIEW mode
+    setMetadata({
+      ...form.metadata,
+      id: form.id, // ⭐ store saved form ID inside metadata
+      viewType: 'VIEW',
+    });
 
-    
-  // Load saved metadata but always open in VIEW mode
- setMetadata({
-  ...form.metadata,
-  id: form.id,          // ⭐ store saved form ID inside metadata
-  viewType: "VIEW",
-  
-});
+    setSubmittedData(form.submittedData || null); // ⭐ LOAD SAVED VALUES HERE
+    console.log('FORM.SUBMITTEDDATA LOADED:', form.submittedData);
 
-
-
-  setSubmittedData(form.submittedData || null);   // ⭐ LOAD SAVED VALUES HERE
-console.log("FORM.SUBMITTEDDATA LOADED:", form.submittedData);
-
-localStorage.setItem("currentFormId", form.id);
-  // Go to VIEW page
-  navigate("/view");
-};
+    localStorage.setItem('currentFormId', form.id);
+    // Go to VIEW page
+    navigate('/view');
+  };
 
   const deleteForm = (id: string) => {
-    const updated = forms.filter(f => f.id !== id);
+    const updated = forms.filter((f) => f.id !== id);
     setForms(updated);
-    localStorage.setItem("savedForms", JSON.stringify(updated));
+    localStorage.setItem('savedForms', JSON.stringify(updated));
   };
 
   return (
@@ -80,7 +75,7 @@ localStorage.setItem("currentFormId", form.id);
             <div className="flex gap-2">
               <button
                 className="px-3 py-1 rounded bg-blue-600 text-white text-sm"
-                onClick={() => openForm(form)}   // ⭐ EDIT preview
+                onClick={() => openForm(form)} // ⭐ EDIT preview
               >
                 Open
               </button>

@@ -12,22 +12,17 @@ export const FormBuilderPage = ({ showPreview }: Props) => {
 
   const { metadata, addSection, setMetadata } = ctx;
 
-  // ⭐ Detect current URL to avoid duplicate UI
   const location = useLocation();
   const isPreviewRoute =
-    location.pathname === "/preview" ||
-    location.pathname === "/view" ||
-    location.pathname === "/edit";
+    location.pathname === '/preview' ||
+    location.pathname === '/view' ||
+    location.pathname === '/edit';
 
-  // ⭐ If on a preview-related route, return nothing
   if (isPreviewRoute) return null;
 
-  // ⭐ Local state for editable title
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-
   const handleTitleBlur = () => setIsEditingTitle(false);
 
-  // ⭐ Convert viewType to lower-case preview mode
   const previewMode =
     metadata.viewType === 'CREATE'
       ? 'create'
@@ -35,7 +30,6 @@ export const FormBuilderPage = ({ showPreview }: Props) => {
       ? 'view'
       : 'edit';
 
-  // ⭐ If Preview button is ON → show preview form
   if (showPreview) {
     return (
       <div className="p-6">
@@ -44,69 +38,93 @@ export const FormBuilderPage = ({ showPreview }: Props) => {
     );
   }
 
-  // ⭐ Otherwise show the form builder UI
+  const isEmpty = metadata.sections.length === 0;
+
   return (
-    <div className="p-6">
-          {/* 🔥 Builder Validation Error Message */}
-    {ctx.builderError && (
-      <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 mb-4 rounded">
-        {ctx.builderError}
-      </div>
-    )}
+    <div className="p-5 min-h-[68vh] flex flex-col">
+      {/* Error message */}
+      {ctx.builderError && (
+        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 mb-4 rounded">
+          {ctx.builderError}
+        </div>
+      )}
 
+      {/* ================= EMPTY STATE UI ================= */}
+      {metadata.viewType === 'CREATE' && isEmpty ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="border-2 border-dashed rounded-xl p-14 text-center w-full max-w-4xl mx-auto bg-white shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Your form is Empty
+            </h2>
 
-      {/* CREATE Mode → Builder */}
-      {metadata.viewType === 'CREATE' && (
-        <>
-          {/* Editable Title */}
-          <div className="mb-4">
-            {isEditingTitle ? (
-              <input
-                autoFocus
-                type="text"
-                className="border-none outline-none px-2 py-1 rounded text-2xl font-bold"
-                style={{
-                  width: `${Math.max(metadata.title.length * 14, 200)}px`,
-                }}
-                value={metadata.title}
-                onChange={(e) =>
-                  setMetadata((prev) => ({
-                    ...prev,
-                    title: e.target.value,
-                  }))
-                }
-                onBlur={handleTitleBlur}
-              />
-            ) : (
-              <h1
-                className="text-2xl font-bold cursor-text"
-                onClick={() => setIsEditingTitle(true)}
-              >
-                {metadata.title || 'Untitled Form'}
-              </h1>
-            )}
+            <p className="text-md text-gray-600 mb-6">
+              Click <span className="font-semibold">"+ Add Section"</span> to
+              begin building your form.
+            </p>
+
+            <button
+              onClick={addSection}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg text-md font-medium shadow hover:bg-blue-700 transition-all"
+            >
+              + Add Your First Section
+            </button>
           </div>
+        </div>
+      ) : (
+        <>
+          {/* Title */}
+          {metadata.viewType === 'CREATE' && (
+            <div className="mb-4">
+              {isEditingTitle ? (
+                <input
+                  autoFocus
+                  type="text"
+                  className="border-none outline-none px-2 py-1 rounded text-2xl font-bold"
+                  style={{
+                    width: `${Math.max(metadata.title.length * 14, 200)}px`,
+                  }}
+                  value={metadata.title}
+                  onChange={(e) =>
+                    setMetadata((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  onBlur={handleTitleBlur}
+                />
+              ) : (
+                <h1
+                  className="text-2xl font-bold cursor-text"
+                  onClick={() => setIsEditingTitle(true)}
+                >
+                  {metadata.title || 'Untitled Form'}
+                </h1>
+              )}
+            </div>
+          )}
 
-          {/* Add Section Button */}
-          <button
-            onClick={addSection}
-            className="bg-blue-600 text-white px-4 py-2 rounded mb-5"
-          >
-            + Add Section
-          </button>
+          {/* Add Section Button (when form is not empty) */}
+          {metadata.viewType === 'CREATE' && !isEmpty && (
+            <div className="w-fit">
+              <button
+                onClick={addSection}
+                className="bg-blue-600 text-white px-5 py-2.5 rounded-lg mb-5 shadow hover:bg-blue-700 transition"
+              >
+                + Add Section
+              </button>
+            </div>
+          )}
 
           {/* Section List */}
           {metadata.sections.map((section) => (
             <SectionComponent key={section.id} section={section} />
           ))}
+
+          {/* View / Edit */}
+          {metadata.viewType === 'VIEW' && <PreviewForm mode="view" />}
+          {metadata.viewType === 'EDIT' && <PreviewForm mode="edit" />}
         </>
       )}
-
-      {/* VIEW Mode */}
-      {metadata.viewType === 'VIEW' && <PreviewForm mode="view" />}
-
-      {/* EDIT Mode */}
-      {metadata.viewType === 'EDIT' && <PreviewForm mode="edit" />}
     </div>
   );
 };

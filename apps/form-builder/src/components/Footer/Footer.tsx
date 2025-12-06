@@ -3,7 +3,7 @@ export const Footer = () => (
     <div className="max-w-7xl mx-auto px-6 py-10">
 
       {/* Top Row */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+      <div className="flex flex-col md:flex-row  md:items-center gap-8">
         
         {/* Logo / Branding */}
         <div>
