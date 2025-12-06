@@ -1,6 +1,8 @@
-import { useContext, useState, useEffect } from "react";
-import { FormBuilderContext } from "../../context/FormBuilderContext";
-import { Field } from "../../types/form";
+import { useContext, useState, useEffect } from 'react';
+import { FormBuilderContext } from '../../context/FormBuilderContext';
+import { Field } from '../../types/form';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 type FieldProps = {
   field: Field;
@@ -47,7 +49,7 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
       />
 
       {/* Field Type Dropdown */}
-      <select
+      {/* <select
         value={field.type}
         onChange={(e) => updateField({ type: e.target.value as Field["type"] })}
         className="border px-2 py-1 w-full rounded mb-2"
@@ -58,12 +60,38 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
         <option value="textarea">Textarea</option>
         <option value="select">Select</option>
         <option value="checkbox">Checkbox</option>
-      </select>
+      </select> */}
+
+      <Autocomplete
+        disablePortal
+        options={[
+          'text',
+          'number',
+          'date',
+          'textarea',
+          'select',
+          'checkbox',
+          'email',
+        ]}
+        value={field.type}
+        onChange={(event, newValue) =>
+          updateField({ type: (newValue ?? '') as Field['type'] })
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Field Type"
+            variant="outlined"
+            size="small"
+          />
+        )}
+        sx={{ mb: 2 }}
+      />
 
       {/* Field Size Dropdown */}
       <select
         value={field.size}
-        onChange={(e) => updateField({ size: e.target.value as Field["size"] })}
+        onChange={(e) => updateField({ size: e.target.value as Field['size'] })}
         className="border px-2 py-1 w-full rounded mb-2"
       >
         <option value="SMALL">Small (33%)</option>
@@ -83,18 +111,20 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
       </div>
 
       {/* Text / Textarea: minLength & maxLength */}
-      {(field.type === "text" || field.type === "textarea") && (
+      {(field.type === 'text' || field.type === 'textarea') && (
         <div className="mb-2">
           <div className="flex gap-2 mb-2">
             <div className="flex-1">
               <label className="block text-sm mb-1">Min Length</label>
               <input
                 type="number"
-                value={field.minLength ?? ""}
+                value={field.minLength ?? ''}
                 onChange={(e) =>
                   updateField({
                     minLength:
-                      e.target.value === "" ? undefined : Number(e.target.value),
+                      e.target.value === ''
+                        ? undefined
+                        : Number(e.target.value),
                   })
                 }
                 className="border px-2 py-1 w-full rounded"
@@ -104,11 +134,13 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
               <label className="block text-sm mb-1">Max Length</label>
               <input
                 type="number"
-                value={field.maxLength ?? ""}
+                value={field.maxLength ?? ''}
                 onChange={(e) =>
                   updateField({
                     maxLength:
-                      e.target.value === "" ? undefined : Number(e.target.value),
+                      e.target.value === ''
+                        ? undefined
+                        : Number(e.target.value),
                   })
                 }
                 className="border px-2 py-1 w-full rounded"
@@ -119,17 +151,20 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
       )}
 
       {/* Number: min & max */}
-      {field.type === "number" && (
+      {field.type === 'number' && (
         <div className="mb-2">
           <div className="flex gap-2 mb-2">
             <div className="flex-1">
               <label className="block text-sm mb-1">Min</label>
               <input
                 type="number"
-                value={field.min ?? ""}
+                value={field.min ?? ''}
                 onChange={(e) =>
                   updateField({
-                    min: e.target.value === "" ? undefined : Number(e.target.value),
+                    min:
+                      e.target.value === ''
+                        ? undefined
+                        : Number(e.target.value),
                   })
                 }
                 className="border px-2 py-1 w-full rounded"
@@ -139,10 +174,13 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
               <label className="block text-sm mb-1">Max</label>
               <input
                 type="number"
-                value={field.max ?? ""}
+                value={field.max ?? ''}
                 onChange={(e) =>
                   updateField({
-                    max: e.target.value === "" ? undefined : Number(e.target.value),
+                    max:
+                      e.target.value === ''
+                        ? undefined
+                        : Number(e.target.value),
                   })
                 }
                 className="border px-2 py-1 w-full rounded"
@@ -153,12 +191,12 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
       )}
 
       {/* Select: options (comma separated) */}
-      {field.type === "select" && (
+      {field.type === 'select' && (
         <SelectOptionsEditor field={field} updateField={updateField} />
       )}
 
       {/* Checkbox: default value */}
-      {field.type === "checkbox" && (
+      {field.type === 'checkbox' && (
         <div className="flex items-center gap-2 mb-2">
           <input
             type="checkbox"
@@ -184,18 +222,18 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
 // FIXED: Select Options Editor Component
 // -------------------------------------
 const SelectOptionsEditor = ({ field, updateField }: any) => {
-  const [text, setText] = useState((field.options ?? []).join(", "));
+  const [text, setText] = useState((field.options ?? []).join(', '));
 
   // Sync when switching fields
   useEffect(() => {
-    setText((field.options ?? []).join(", "));
+    setText((field.options ?? []).join(', '));
   }, [field.id]);
 
   const handleChange = (value: string) => {
     setText(value);
 
     const list = value
-      .split(",")
+      .split(',')
       .map((opt) => opt.trim())
       .filter(Boolean);
 
