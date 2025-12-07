@@ -14,27 +14,24 @@ export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
   const [submittedData, setSubmittedData] = useState<any>(null);
   const [builderError, setBuilderError] = useState<string | null>(null);
 
-
   const firstLoadRef = useRef(true);
 
   // ⭐ 1. AUTO-LOAD FIRST (on initial page load)
-//  useEffect(() => {
-//   const forms = JSON.parse(localStorage.getItem("savedForms") || "[]");
-//   const id = localStorage.getItem("currentFormId");
+  //  useEffect(() => {
+  //   const forms = JSON.parse(localStorage.getItem("savedForms") || "[]");
+  //   const id = localStorage.getItem("currentFormId");
 
-//   if (id) {
-//     const existing = forms.find((f: any) => f.id === id);
-//     if (existing) {
-//       setMetadata(existing.metadata);          // ⭐ restore layout
-//       setSubmittedData(existing.submittedData || null);   // ⭐ restore values
-//     }
-//   }
-// }, []);
+  //   if (id) {
+  //     const existing = forms.find((f: any) => f.id === id);
+  //     if (existing) {
+  //       setMetadata(existing.metadata);          // ⭐ restore layout
+  //       setSubmittedData(existing.submittedData || null);   // ⭐ restore values
+  //     }
+  //   }
+  // }, []);
 
-// Do nothing on first load → always start empty
-useEffect(() => {}, []);
-
-
+  // Do nothing on first load → always start empty
+  useEffect(() => {}, []);
 
   // ⭐ 2. AUTO-SAVE AFTER LOAD FINISHES
   useEffect(() => {
@@ -44,7 +41,7 @@ useEffect(() => {}, []);
     }
 
     // Save on every change AFTER load
-    localStorage.setItem("formBuilderMetadata", JSON.stringify(metadata));
+    localStorage.setItem('formBuilderMetadata', JSON.stringify(metadata));
   }, [metadata]);
 
   // -----------------------------
@@ -58,7 +55,7 @@ useEffect(() => {}, []);
       rows: [],
     };
 
-    setMetadata(prev => ({
+    setMetadata((prev) => ({
       ...prev,
       sections: [...prev.sections, newSection],
     }));
@@ -66,46 +63,49 @@ useEffect(() => {}, []);
 
   // Delete Section
   const deleteSection = (sectionId: string) => {
-    setMetadata(prev => ({
+    setMetadata((prev) => ({
       ...prev,
-      sections: prev.sections.filter(sec => sec.id !== sectionId),
+      sections: prev.sections.filter((sec) => sec.id !== sectionId),
     }));
   };
 
   // Add Row
   const addRow = (sectionId: string) => {
-    setMetadata(prev => ({
+    setMetadata((prev) => ({
       ...prev,
-      sections: prev.sections.map(section =>
+      sections: prev.sections.map((section) =>
         section.id !== sectionId
           ? section
-          : { ...section, rows: [...section.rows, { id: uuidv4(), fields: [] }] }
+          : {
+              ...section,
+              rows: [...section.rows, { id: uuidv4(), fields: [] }],
+            }
       ),
     }));
   };
 
   // Delete Row
   const deleteRow = (sectionId: string, rowId: string) => {
-    setMetadata(prev => ({
+    setMetadata((prev) => ({
       ...prev,
-      sections: prev.sections.map(section =>
+      sections: prev.sections.map((section) =>
         section.id !== sectionId
           ? section
-          : { ...section, rows: section.rows.filter(r => r.id !== rowId) }
+          : { ...section, rows: section.rows.filter((r) => r.id !== rowId) }
       ),
     }));
   };
 
   // Add Field
   const addField = (sectionId: string, rowId: string) => {
-    setMetadata(prev => ({
+    setMetadata((prev) => ({
       ...prev,
-      sections: prev.sections.map(section =>
+      sections: prev.sections.map((section) =>
         section.id !== sectionId
           ? section
           : {
               ...section,
-              rows: section.rows.map(row =>
+              rows: section.rows.map((row) =>
                 row.id !== rowId
                   ? row
                   : {
@@ -133,21 +133,22 @@ useEffect(() => {}, []);
     }));
   };
 
-  
-
   // Delete Field
   const deleteField = (sectionId: string, rowId: string, fieldId: string) => {
-    setMetadata(prev => ({
+    setMetadata((prev) => ({
       ...prev,
-      sections: prev.sections.map(section =>
+      sections: prev.sections.map((section) =>
         section.id !== sectionId
           ? section
           : {
               ...section,
-              rows: section.rows.map(row =>
+              rows: section.rows.map((row) =>
                 row.id !== rowId
                   ? row
-                  : { ...row, fields: row.fields.filter(f => f.id !== fieldId) }
+                  : {
+                      ...row,
+                      fields: row.fields.filter((f) => f.id !== fieldId),
+                    }
               ),
             }
       ),
@@ -167,8 +168,8 @@ useEffect(() => {}, []);
         deleteRow,
         addField,
         deleteField,
-         builderError,
-    setBuilderError,
+        builderError,
+        setBuilderError,
       }}
     >
       {children}

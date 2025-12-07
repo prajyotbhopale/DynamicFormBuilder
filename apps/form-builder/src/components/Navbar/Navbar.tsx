@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { FormBuilderContext } from '../../context/FormBuilderContext';
 import { FormMetadataSchema } from '../../validation/validateMetadata';
 
-type NavbarProps = {
-  showPreview: boolean;
-  setShowPreview: React.Dispatch<React.SetStateAction<boolean>>;
-};
+import { NavbarModes } from './NavbarModes';
+import { NavbarPreviewDots } from './NavbarPreviewDots';
+import { NavbarMobileMenu } from './NavbarMobileMenu';
 
-export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
+export const Navbar = ({ showPreview, setShowPreview }: any) => {
   const ctx = useContext(FormBuilderContext);
   const navigate = useNavigate();
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -16,7 +15,6 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
 
   const dotsRef = useRef<any>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e: any) => {
       if (dotsRef.current && !dotsRef.current.contains(e.target)) {
@@ -31,7 +29,6 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
 
   const { metadata, setMetadata, submittedData } = ctx;
 
-  // Validate before preview/view/edit
   const validateBeforePreview = () => {
     try {
       FormMetadataSchema.parse(metadata);
@@ -44,17 +41,15 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
     }
   };
 
-  // FIXED: Create should open builder directly
   const switchMode = (mode: 'CREATE' | 'VIEW' | 'EDIT') => {
     if (mode === 'CREATE') {
-      ctx.setBuilderError(null); // ⭐ CLEAR OLD ERRORS
+      ctx.setBuilderError(null);
       setMetadata({ ...metadata, viewType: 'CREATE' });
-      setShowPreview(false); // ⭐ GO BACK TO BUILDER MODE
-      navigate('/'); // ⭐ OPEN BUILDER PAGE
+      setShowPreview(false);
+      navigate('/');
       return;
     }
 
-    // View or Edit → validate first
     if (!validateBeforePreview()) return;
 
     setMetadata({ ...metadata, viewType: mode });
@@ -75,7 +70,6 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
 
     const allForms = JSON.parse(localStorage.getItem('savedForms') || '[]');
 
-    // ⭐ CASE 1 — UPDATE EXISTING FORM
     if (metadata.id) {
       const index = allForms.findIndex((f: any) => f.id === metadata.id);
 
@@ -87,7 +81,7 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
             ...metadata,
             viewType: 'CREATE',
           },
-          submittedData: submittedData || null, // ⭐ update submittedData also
+          submittedData: submittedData || null,
         };
 
         localStorage.setItem('savedForms', JSON.stringify(allForms));
@@ -105,7 +99,6 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
       }
     }
 
-    // ⭐ CASE 2 — CREATE NEW FORM
     const newForm = {
       id: crypto.randomUUID(),
       title: metadata.title || 'Untitled Form',
@@ -113,7 +106,7 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
         ...metadata,
         viewType: 'CREATE',
       },
-      submittedData: submittedData || null, // ⭐ store filled values
+      submittedData: submittedData || null,
       createdAt: new Date().toISOString(),
     };
 
@@ -135,105 +128,26 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
   return (
     <nav className="backdrop-blur-lg bg-white/70 border-b shadow-md sticky top-0 z-50">
       <div className="w-full px-6 py-4 flex items-center justify-between">
-        {/* Brand */}
         <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Dynamic Form Builder
         </h1>
 
-        {/* DESKTOP — Center Action Buttons */}
-        <div className="hidden md:flex items-center gap-3">
-          {/* Mode Toggle Group */}
-          <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full shadow-sm">
-            <button
-              className={`px-4 py-2 rounded-full text-sm font-medium
-                ${
-                  metadata.viewType === 'CREATE'
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'hover:bg-gray-200'
-                }`}
-              onClick={() => switchMode('CREATE')}
-            >
-              Create
-            </button>
+        <NavbarModes
+          metadata={metadata}
+          switchMode={switchMode}
+          saveFormLayout={saveFormLayout}
+        />
 
-            <button
-              className={`px-4 py-2 rounded-full text-sm font-medium
-    ${
-      metadata.viewType === 'VIEW'
-        ? 'bg-green-600 text-white shadow'
-        : 'hover:bg-gray-200'
-    }`}
-              onClick={() => switchMode('VIEW')}
-            >
-              View
-            </button>
+        <NavbarPreviewDots
+          showPreview={showPreview}
+          setShowPreview={setShowPreview}
+          validateBeforePreview={validateBeforePreview}
+          navigate={navigate}
+          dotsRef={dotsRef}
+          dotsMenu={dotsMenu}
+          setDotsMenu={setDotsMenu}
+        />
 
-            <button
-              className={`px-4 py-2 rounded-full text-sm font-medium
-    ${
-      metadata.viewType === 'EDIT'
-        ? 'bg-purple-600 text-white shadow'
-        : 'hover:bg-gray-200'
-    }`}
-              onClick={() => switchMode('EDIT')}
-            >
-              Edit
-            </button>
-          </div>
-
-          {/* Save Form */}
-          <button
-            className="px-5 py-2 rounded-full bg-green-600 text-white shadow hover:bg-green-700"
-            onClick={saveFormLayout}
-          >
-            Save Form
-          </button>
-        </div>
-
-        {/* DESKTOP — Preview + 3 Dots */}
-        <div className="hidden md:flex items-center gap-3">
-          <button
-            className="px-5 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow"
-            onClick={() => {
-              if (showPreview) {
-                setShowPreview(false);
-                navigate('/');
-              } else {
-                if (!validateBeforePreview()) return;
-                setShowPreview(true);
-                navigate('/preview');
-              }
-            }}
-          >
-            {showPreview ? 'Back to Builder' : 'Preview'}
-          </button>
-
-          {/* Three Dots Menu */}
-          <div className="relative" ref={dotsRef}>
-            <button
-              className="px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 text-xl"
-              onClick={() => setDotsMenu(!dotsMenu)}
-            >
-              ⋮
-            </button>
-
-            {dotsMenu && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border shadow-lg rounded">
-                <button
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                  onClick={() => {
-                    setDotsMenu(false);
-                    navigate('/saved-forms');
-                  }}
-                >
-                  Saved Forms
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* MOBILE — Hamburger */}
         <button
           className="md:hidden px-4 py-2 rounded-lg bg-gray-200 text-xl"
           onClick={() => setMobileMenu(!mobileMenu)}
@@ -242,55 +156,15 @@ export const Navbar = ({ showPreview, setShowPreview }: NavbarProps) => {
         </button>
       </div>
 
-      {/* MOBILE MENU */}
-      {mobileMenu && (
-        <div className="md:hidden bg-white shadow-lg border-t py-3 px-6 space-y-3">
-          <button
-            className="w-full text-left"
-            onClick={() => switchMode('CREATE')}
-          >
-            Create
-          </button>
-          <button
-            className="w-full text-left"
-            onClick={() => switchMode('VIEW')}
-          >
-            View
-          </button>
-          <button
-            className="w-full text-left"
-            onClick={() => switchMode('EDIT')}
-          >
-            Edit
-          </button>
-
-          <button className="w-full text-left" onClick={saveFormLayout}>
-            Save Form
-          </button>
-
-          <button
-            className="w-full text-left"
-            onClick={() => {
-              if (!validateBeforePreview()) return;
-              setShowPreview(true);
-              navigate('/preview');
-              setMobileMenu(false);
-            }}
-          >
-            Preview
-          </button>
-
-          <button
-            className="w-full text-left"
-            onClick={() => {
-              navigate('/saved-forms');
-              setMobileMenu(false);
-            }}
-          >
-            Saved Forms
-          </button>
-        </div>
-      )}
+      <NavbarMobileMenu
+        mobileMenu={mobileMenu}
+        switchMode={switchMode}
+        saveFormLayout={saveFormLayout}
+        validateBeforePreview={validateBeforePreview}
+        setShowPreview={setShowPreview}
+        navigate={navigate}
+        setMobileMenu={setMobileMenu}
+      />
     </nav>
   );
 };

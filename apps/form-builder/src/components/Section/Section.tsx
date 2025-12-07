@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import React, { useContext, useState, useCallback, useMemo } from 'react';
 import { FormBuilderContext } from '../../context/FormBuilderContext';
 import { Section } from '../../types/form';
 import { RowComponent } from '../Row/Row';
@@ -7,7 +7,7 @@ type SectionProps = {
   section: Section;
 };
 
-export const SectionComponent = ({ section }: SectionProps) => {
+const SectionComponentBase = ({ section }: SectionProps) => {
   const ctx = useContext(FormBuilderContext);
   if (!ctx) return null;
 
@@ -15,26 +15,58 @@ export const SectionComponent = ({ section }: SectionProps) => {
 
   const [isCollapsed, setIsCollapsed] = useState(section.collapsed);
 
-  const isCreate = metadata.viewType === 'CREATE';
-
-  // ⭐ Update section label
- const updateLabel = (label: string) => {
-  const updatedSections = metadata.sections.map((sec) =>
-    sec.id === section.id ? { ...sec, label } : sec
+  // --------------------------------------------------
+  // ✅ Memoize this — prevents re-calculating on each render
+  // --------------------------------------------------
+  const isCreate = useMemo(
+    () => metadata.viewType === 'CREATE',
+    [metadata.viewType]
   );
 
-  setMetadata({ ...metadata, sections: updatedSections });
+  // --------------------------------------------------
+  // ⭐ Update section label — now using useCallback
+  // --------------------------------------------------
+  const updateLabel = useCallback(
+    (label: string) => {
+      setMetadata((prev) => {
+        const updatedSections = prev.sections.map((sec) =>
+          sec.id === section.id ? { ...sec, label } : sec
+        );
 
-  // ⭐ Clear Zod validation error when label is corrected
-  if (ctx.setBuilderError) {
-    ctx.setBuilderError(null);
-  }
-};
+        return { ...prev, sections: updatedSections };
+      });
 
+      // ⭐ Clear Zod validation error when label is corrected
+      if (ctx.setBuilderError) {
+        ctx.setBuilderError(null);
+      }
+    },
+    [setMetadata, section.id, ctx]
+  );
 
-  // ⭐ Clean logic: hide "New Section" only in preview/view/edit
-  const visibleLabel =
-    !isCreate && section.label === 'New Section' ? '' : section.label;
+  // --------------------------------------------------
+  // ⭐ Calculate visibleLabel once using useMemo
+  // --------------------------------------------------
+  const visibleLabel = useMemo(() => {
+    return !isCreate && section.label === 'New Section'
+      ? ''
+      : section.label;
+  }, [isCreate, section.label]);
+
+  // --------------------------------------------------
+  // ⭐ useCallback for stable handlers
+  // --------------------------------------------------
+  const handleAddRow = useCallback(() => {
+    addRow(section.id);
+  }, [addRow, section.id]);
+
+  const handleDeleteSection = useCallback(() => {
+    deleteSection(section.id);
+  }, [deleteSection, section.id]);
+
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed((prev) => !prev);
+  }, []);
 
   return (
     <div className="border rounded p-4 mb-4 bg-white shadow-sm">
@@ -50,7 +82,6 @@ export const SectionComponent = ({ section }: SectionProps) => {
             className="text-lg font-semibold border-b px-2 py-1 w-1/2"
           />
         ) : (
-          // ⭐ Show the label in VIEW/EDIT mode
           <h2 className="text-xl font-semibold text-gray-800">
             {visibleLabel}
           </h2>
@@ -61,7 +92,7 @@ export const SectionComponent = ({ section }: SectionProps) => {
           {isCreate && (
             <button
               className="px-3 py-1 border rounded"
-              onClick={() => setIsCollapsed(!isCollapsed)}
+              onClick={toggleCollapse}
             >
               {isCollapsed ? 'Expand' : 'Collapse'}
             </button>
@@ -71,7 +102,7 @@ export const SectionComponent = ({ section }: SectionProps) => {
           {isCreate && (
             <button
               className="px-3 py-1 bg-red-500 text-white rounded"
-              onClick={() => deleteSection(section.id)}
+              onClick={handleDeleteSection}
             >
               Delete
             </button>
@@ -86,7 +117,7 @@ export const SectionComponent = ({ section }: SectionProps) => {
           {isCreate && (
             <button
               className="px-3 py-1 mb-4 bg-blue-600 text-white rounded"
-              onClick={() => addRow(section.id)}
+              onClick={handleAddRow}
             >
               + Add Row
             </button>
@@ -103,3 +134,5 @@ export const SectionComponent = ({ section }: SectionProps) => {
     </div>
   );
 };
+
+export const SectionComponent = React.memo(SectionComponentBase);
