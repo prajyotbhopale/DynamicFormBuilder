@@ -19,7 +19,6 @@ This is a dynamic form builder application that allows users to create, manage, 
 - [Usage](#usage)
 - [Folder Structure](#folder-structure)
 - [Future Improvements](#future-improvements)
-- [License](#license)
 
 ## Features
 
