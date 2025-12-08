@@ -17,7 +17,6 @@ This is a dynamic form builder application that allows users to create, manage, 
 - [State Management](#state-management)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Folder Structure](#folder-structure)
 - [Future Improvements](#future-improvements)
 
 ## Features
@@ -51,42 +50,6 @@ The form layout is based on a three-level hierarchy: **Sections → Rows → Fie
 - **Sections**: The top-level containers that group related fields. Each section has a title and can be collapsed, edited, or deleted.
 - **Rows**: Within each section, there are rows that hold the fields. Each row can contain one or more fields.
 - **Fields**: The actual input elements of the form. The layout of fields within a row is determined by their specified size. The total size of fields in a row cannot exceed 12.
-
-### Metadata Schema
-
-The structure of the form is defined by a metadata object with the following schema:
-
-```typescript
-// Section
-export interface Section {
-  id: string;
-  title: string;
-  rows: Row[];
-}
-
-// Row
-export interface Row {
-  id: string;
-  fields: Field[];
-}
-
-// Field
-export interface Field {
-  id: string;
-  name: string;
-  label: string;
-  type: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
-  size: number; // 1-12
-  validation: {
-    required?: boolean;
-    minLength?: number;
-    maxLength?: number;
-    patter?: string;
-  };
-  options?: string[]; // for select
-  defaultValue?: string | boolean;
-}
-```
 
 ## Modes
 
@@ -188,10 +151,16 @@ If the validation is successful, the form data is passed to the `setSubmittedDat
 
 ## Installation
 
+This command creates a new Nx workspace using the latest version of Nx.
+
+```bash
+npx create-nx-workspace@latest
+```
+
 To get started with the project, you need to install the dependencies. This project uses pnpm as the package manager.
 
 ```bash
-pnpm install
+npm install
 ```
 
 ## Usage
@@ -201,89 +170,21 @@ pnpm install
 To run the application in development mode, use the following NX command:
 
 Running in Development Mode
-$ npx nx serve form-builder
+
+```bash
+npx nx serve form-builder
+```
 
 Creating a Production Build
-$ npx nx build form-builder
+
+```bash
+npx nx build form-builder
+```
 
 Previewing the Production Build
-$ npx nx preview form-builder
 
-## Folder Structure
-
-```
-form-builder-workspace/
-│
-├── apps/
-│   └── form-builder/
-│       ├── public/
-│       │   └── index.html
-│       │
-│       └── src/
-│           ├── app/
-│           │   └── App.tsx
-│           │
-│           ├── components/
-│           │   ├── Field/
-│           │   │   ├── Field.tsx
-│           │   │   ├── FieldControls.tsx
-│           │   │   └── FieldTypes/
-│           │   │       ├── TextField.tsx
-│           │       │   ├── NumberField.tsx
-│           │       │   ├── DateField.tsx
-│           │       │   ├── SelectField.tsx
-│           │       │   ├── TextareaField.tsx
-│           │       │   └── CheckboxField.tsx
-│           │   │
-│           │   ├── Row/
-│           │   │   └── Row.tsx
-│           │   │
-│           │   ├── Section/
-│           │   │   └── Section.tsx
-│           │   │
-│           │   ├── Preview/
-│           │   │   └── PreviewForm.tsx
-│           │   │
-│           │   ├── Navbar/
-│           │   │   ├── Navbar.tsx
-│           │   │   ├── NavbarModes.tsx
-│           │   │   ├── NavbarMobileMenu.tsx
-│           │   │   └── NavbarPreviewDots.tsx
-│           │   │
-│           │   └── Footer/
-│           │       └── Footer.tsx
-│           │
-│           ├── context/
-│           │   ├── FormBuilderContext.tsx
-│           │   └── FormBuilderProvider.tsx
-│           │
-│           ├── pages/
-│           │   ├── FormBuilderPage.tsx
-│           │   ├── SavedFormsPage.tsx
-│           │   └── SavedFilledFormsPage.tsx
-│           │
-│           ├── routes/
-│           │   └── AppRoutes.tsx
-│           │
-│           ├── types/
-│           │   └── form.ts
-│           │
-│           ├── utils/
-│           │   └── getExactWidth.ts
-│           │
-│           ├── validation/
-│           │   └── validateMetadata.ts
-│           │
-│           ├── main.tsx
-│           └── styles.css
-│
-├── package.json
-├── nx.json
-├── tsconfig.json
-├── tsconfig.base.json
-├── vite.config.mts
-└── eslint.config.mjs
-
+```bash
+npx nx preview form-builder
 ```
 
 ## Future Improvements
