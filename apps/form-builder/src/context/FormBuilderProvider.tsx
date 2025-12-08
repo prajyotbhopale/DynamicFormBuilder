@@ -16,20 +16,6 @@ export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
 
   const firstLoadRef = useRef(true);
 
-  // ⭐ 1. AUTO-LOAD FIRST (on initial page load)
-  //  useEffect(() => {
-  //   const forms = JSON.parse(localStorage.getItem("savedForms") || "[]");
-  //   const id = localStorage.getItem("currentFormId");
-
-  //   if (id) {
-  //     const existing = forms.find((f: any) => f.id === id);
-  //     if (existing) {
-  //       setMetadata(existing.metadata);          // ⭐ restore layout
-  //       setSubmittedData(existing.submittedData || null);   // ⭐ restore values
-  //     }
-  //   }
-  // }, []);
-
   // Do nothing on first load → always start empty
   useEffect(() => {}, []);
 
