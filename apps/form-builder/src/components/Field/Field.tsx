@@ -48,20 +48,6 @@ export const FieldComponent = ({ field, rowId, sectionId }: FieldProps) => {
         placeholder="Field Label"
       />
 
-      {/* Field Type Dropdown */}
-      {/* <select
-        value={field.type}
-        onChange={(e) => updateField({ type: e.target.value as Field["type"] })}
-        className="border px-2 py-1 w-full rounded mb-2"
-      >
-        <option value="text">Text</option>
-        <option value="number">Number</option>
-        <option value="date">Date</option>
-        <option value="textarea">Textarea</option>
-        <option value="select">Select</option>
-        <option value="checkbox">Checkbox</option>
-      </select> */}
-
       <Autocomplete
         disablePortal
         options={[

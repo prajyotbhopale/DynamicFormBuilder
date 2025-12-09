@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import { FormBuilderContext } from './FormBuilderContext';
-import { FormMetadata, Section } from '../types/form';
+import { Field, FormMetadata, Section} from '../types/form';
 import { v4 as uuidv4 } from 'uuid';
 
 const initialMetadata: FormMetadata = {
@@ -17,19 +17,6 @@ export const FormBuilderProvider = ({ children }: { children: ReactNode }) => {
 
   const firstLoadRef = useRef(true);
 
-  // ⭐ 1. AUTO-LOAD FIRST (on initial page load)
-//  useEffect(() => {
-//   const forms = JSON.parse(localStorage.getItem("savedForms") || "[]");
-//   const id = localStorage.getItem("currentFormId");
-
-//   if (id) {
-//     const existing = forms.find((f: any) => f.id === id);
-//     if (existing) {
-//       setMetadata(existing.metadata);          // ⭐ restore layout
-//       setSubmittedData(existing.submittedData || null);   // ⭐ restore values
-//     }
-//   }
-// }, []);
 
 // Do nothing on first load → always start empty
 useEffect(() => {}, []);
@@ -72,17 +59,53 @@ useEffect(() => {}, []);
     }));
   };
 
-  // Add Row
-  const addRow = (sectionId: string) => {
-    setMetadata(prev => ({
-      ...prev,
-      sections: prev.sections.map(section =>
-        section.id !== sectionId
-          ? section
-          : { ...section, rows: [...section.rows, { id: uuidv4(), fields: [] }] }
-      ),
-    }));
-  };
+ 
+// Add Row
+const addRow = (sectionId: string) => {
+  const defaultFields: Field[] = [
+    {
+      id: uuidv4(),
+      label: "New Field",
+      type: "text",
+      size: "SMALL",
+      required: false,
+    },
+    {
+      id: uuidv4(),
+      label: "New Field",
+      type: "text",
+      size: "SMALL",
+      required: false,
+    },
+    {
+      id: uuidv4(),
+      label: "New Field",
+      type: "text",
+      size: "SMALL",
+      required: false,
+    },
+  ];
+
+  setMetadata((prev) => ({
+    ...prev,
+    sections: prev.sections.map((section) =>
+      section.id !== sectionId
+        ? section
+        : {
+            ...section,
+            rows: [
+              ...section.rows,
+              {
+                id: uuidv4(),
+                fields: defaultFields,
+              },
+            ],
+          }
+    ),
+  }));
+};
+
+
 
   // Delete Row
   const deleteRow = (sectionId: string, rowId: string) => {

@@ -15,18 +15,6 @@ export const FieldSchema = z.object({
   min: z.number().optional(),
   max: z.number().optional(),
 
-  // ⭐ Select fields must have options
-//  options: z.array(z.string()).optional().superRefine((opts, ctx) => {
-//   const type = (ctx as any).parent.type;
-
-//   if (type === "select" && (!opts || opts.length === 0)) {
-//     ctx.addIssue({
-//       code: z.ZodIssueCode.custom,
-//       message: "Select field must contain at least one option.",
-//     });
-//   }
-// }),
-
 });
 
 // ----------------------

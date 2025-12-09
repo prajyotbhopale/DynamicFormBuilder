@@ -36,9 +36,6 @@ export const PreviewForm = ({ mode }: PreviewFormProps) => {
   // ⭐ Use memoized schema hook
   const formSchema = useZodSchema(metadata);
 
-  
-
-
   const {
     register,
     handleSubmit,

@@ -8,40 +8,45 @@ type SectionProps = {
 };
 
 export const SectionComponent = ({ section }: SectionProps) => {
+  // Access global form builder state and functions
   const ctx = useContext(FormBuilderContext);
   if (!ctx) return null;
 
   const { deleteSection, addRow, setMetadata, metadata } = ctx;
 
+  // Local state for collapsible section
   const [isCollapsed, setIsCollapsed] = useState(section.collapsed);
 
+  // Check if the builder is in CREATE mode
   const isCreate = metadata.viewType === 'CREATE';
 
-  // ⭐ Update section label
- const updateLabel = (label: string) => {
-  const updatedSections = metadata.sections.map((sec) =>
-    sec.id === section.id ? { ...sec, label } : sec
-  );
+  // Update the section label (only in CREATE mode)
+ 
+  const updateLabel = (label: string) => {
+    const updatedSections = metadata.sections.map((sec) =>
+      sec.id === section.id ? { ...sec, label } : sec
+    );
 
-  setMetadata({ ...metadata, sections: updatedSections });
+    setMetadata({ ...metadata, sections: updatedSections });
 
-  // ⭐ Clear Zod validation error when label is corrected
-  if (ctx.setBuilderError) {
-    ctx.setBuilderError(null);
-  }
-};
+    if (ctx.setBuilderError) {
+      ctx.setBuilderError(null);
+    }
+  };
 
-
-  // ⭐ Clean logic: hide "New Section" only in preview/view/edit
   const visibleLabel =
     !isCreate && section.label === 'New Section' ? '' : section.label;
 
   return (
     <div className="border rounded p-4 mb-4 bg-white shadow-sm">
-      {/* ---------- SECTION HEADER ---------- */}
+      
+      {/* ---------------- SECTION HEADER ---------------- */}
       <div className="flex items-center justify-between mb-3">
-        
-        {/* Editable Label ONLY in CREATE mode */}
+
+        {/* Section label:
+           Editable in CREATE mode,
+           Plain text in VIEW/EDIT modes
+         */}
         {isCreate ? (
           <input
             type="text"
@@ -50,14 +55,16 @@ export const SectionComponent = ({ section }: SectionProps) => {
             className="text-lg font-semibold border-b px-2 py-1 w-1/2"
           />
         ) : (
-          // ⭐ Show the label in VIEW/EDIT mode
           <h2 className="text-xl font-semibold text-gray-800">
             {visibleLabel}
           </h2>
         )}
 
         <div className="flex items-center gap-2">
-          {/* Collapse / Expand — ONLY in CREATE mode */}
+
+          {/* Collapse / Expand button
+             Only available when building the form (CREATE mode)
+          */}
           {isCreate && (
             <button
               className="px-3 py-1 border rounded"
@@ -67,7 +74,9 @@ export const SectionComponent = ({ section }: SectionProps) => {
             </button>
           )}
 
-          {/* Delete Section — ONLY in CREATE mode */}
+          {/* Delete section button
+             Only allowed in CREATE mode to avoid losing user data
+          */}
           {isCreate && (
             <button
               className="px-3 py-1 bg-red-500 text-white rounded"
@@ -79,10 +88,13 @@ export const SectionComponent = ({ section }: SectionProps) => {
         </div>
       </div>
 
-      {/* ---------- COLLAPSIBLE BODY ---------- */}
+      {/* ---------------- COLLAPSIBLE SECTION BODY ---------------- */}
       {!isCollapsed && (
         <>
-          {/* Add Row — ONLY in CREATE mode */}
+
+          {/* Add Row button
+             Only shown in CREATE mode
+          */}
           {isCreate && (
             <button
               className="px-3 py-1 mb-4 bg-blue-600 text-white rounded"
@@ -92,12 +104,13 @@ export const SectionComponent = ({ section }: SectionProps) => {
             </button>
           )}
 
-          {/* Render all rows */}
+          {/* Render all rows inside this section */}
           <div className="space-y-4">
             {section.rows.map((row) => (
               <RowComponent key={row.id} row={row} sectionId={section.id} />
             ))}
           </div>
+
         </>
       )}
     </div>

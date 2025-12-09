@@ -10,38 +10,38 @@ type RowProps = {
 };
 
 export const RowComponent = ({ row, sectionId }: RowProps) => {
+  // Access global context (state + actions)
   const ctx = useContext(FormBuilderContext);
   if (!ctx) return null;
 
   const { addField, deleteRow, metadata } = ctx;
 
-
+  // Only allow editing in CREATE mode
   const isCreate = metadata.viewType === "CREATE";
 
   return (
     <div className="border rounded p-3 bg-gray-50">
 
-      {/* FIELDS FLEX WRAP */}
-     <div className="flex flex-wrap mb-3 -mx-2">
-  {row.fields.map((field) => (
-    <div
-      key={field.id}
-      style={{ width: getExactWidth(field.size) }}
-      className="px-2"
-    >
-      <div className="border p-3 rounded bg-white">
-        <FieldComponent
-          field={field}
-          rowId={row.id}
-          sectionId={sectionId}
-        />
+      {/* Render all fields inside this row (flex layout with wrapping) */}
+      <div className="flex flex-wrap mb-3 -mx-2">
+        {row.fields.map((field) => (
+          <div
+            key={field.id}
+            style={{ width: getExactWidth(field.size) }} // compute width dynamically
+            className="px-2"
+          >
+            <div className="border p-3 rounded bg-white">
+              <FieldComponent
+                field={field}
+                rowId={row.id}
+                sectionId={sectionId}
+              />
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-  ))}
-</div>
 
-
-      {/* ADD FIELD + DELETE ROW — only in CREATE mode */}
+      {/* Add Field + Delete Row buttons — visible ONLY in CREATE mode */}
       {isCreate && (
         <div className="flex justify-between items-center">
           <button
